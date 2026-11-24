@@ -1,5 +1,5 @@
 import React from 'react'
-import { CheckCircle2, XCircle, AlertTriangle, Wind, ShieldCheck, Sun, Car } from 'lucide-react'
+import { CheckCircle2, XCircle, Wind, ShieldCheck, Sun, Car } from 'lucide-react'
 import type { AirQualityData, HouseholdProfile } from '../../types'
 import type { OnboardingProfile } from '../../types/onboarding'
 

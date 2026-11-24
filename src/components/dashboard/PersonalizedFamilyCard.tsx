@@ -1,5 +1,5 @@
 import React from 'react'
-import { Users, Baby, HeartHandshake, ShieldAlert, Car, MapPin, Edit3, Sparkles } from 'lucide-react'
+import { Users, ShieldAlert, Car, MapPin, Edit3 } from 'lucide-react'
 import type { OnboardingProfile } from '../../types/onboarding'
 import type { HouseholdProfile } from '../../types'
 

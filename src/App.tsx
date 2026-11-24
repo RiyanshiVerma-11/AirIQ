@@ -8,7 +8,7 @@ import { useAuthContext } from './contexts/useAuthContext'
 import { AuthContainer } from './components/auth/AuthContainer'
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard'
 import { SettingsModal } from './components/settings/SettingsModal'
-import { isOnboardingComplete } from './services/onboardingService'
+import { isOnboardingComplete, getOnboardingProfile, toHouseholdProfile } from './services/onboardingService'
 import { Navbar } from './components/Navbar'
 import { BottomDockNav } from './components/BottomDockNav'
 import { AQIDashboard } from './components/AQIDashboard'
@@ -42,10 +42,13 @@ function AppContent() {
     setHasApiKey(!!getStoredGeminiKey())
   }
 
+  // When user finishes onboarding, IMMEDIATELY synchronize profile & location!
   const handleOnboardingFinish = (selectedLocation: LocationData | null) => {
     if (selectedLocation) {
       selectLocation(selectedLocation)
     }
+    const completedOnboarding = getOnboardingProfile()
+    updateProfile(toHouseholdProfile(completedOnboarding))
     setHasCompletedOnboarding(true)
   }
 
@@ -64,8 +67,13 @@ function AppContent() {
     return (
       <AuthContainer
         onAuthSuccess={() => {
-          // If the newly authenticated user already has an onboarding profile completed, proceed
-          setHasCompletedOnboarding(isOnboardingComplete())
+          const completed = isOnboardingComplete()
+          if (completed) {
+            const onb = getOnboardingProfile()
+            updateProfile(toHouseholdProfile(onb))
+            if (onb.location) selectLocation(onb.location)
+          }
+          setHasCompletedOnboarding(completed)
         }}
       />
     )
@@ -116,6 +124,8 @@ function AppContent() {
             {activeTab === 'dashboard' && (
               <AQIDashboard
                 data={airQualityData}
+                profile={profile}
+                onOpenSettings={() => setIsSettingsOpen(true)}
                 onNavigateTab={(tab) => setActiveTab(tab)}
               />
             )}
