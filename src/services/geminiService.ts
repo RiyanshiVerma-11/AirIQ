@@ -53,7 +53,12 @@ export const AURA_PERSONAS: PersonaMetadata[] = [
 
 export function getStoredGeminiKey(): string {
   try {
-    return localStorage.getItem(GEMINI_STORAGE_KEY) || ''
+    const localKey = localStorage.getItem(GEMINI_STORAGE_KEY)
+    if (localKey && localKey.trim()) {
+      return localKey.trim()
+    }
+    const envKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined) || ''
+    return envKey.trim()
   } catch {
     return ''
   }
@@ -73,7 +78,12 @@ export function setStoredGeminiKey(key: string): void {
 
 export function getStoredGeminiModel(): string {
   try {
-    return localStorage.getItem(GEMINI_MODEL_KEY) || 'gemini-2.0-flash'
+    const localModel = localStorage.getItem(GEMINI_MODEL_KEY)
+    if (localModel && localModel.trim()) {
+      return localModel.trim()
+    }
+    const envModel = (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || ''
+    return envModel.trim() || 'gemini-2.0-flash'
   } catch {
     return 'gemini-2.0-flash'
   }
