@@ -17,6 +17,7 @@ import type { AirQualityData, LocationData } from '../types'
 import { PRESET_LOCATIONS } from '../constants/locations'
 import { getCategoryBadgeColor } from '../services/airQualityService'
 import { searchGlobalLocations, detectUserGeolocation } from '../services/geocodingService'
+import { useAuthContext } from '../contexts/useAuthContext'
 
 interface NavbarProps {
   currentLocation: LocationData
@@ -25,6 +26,7 @@ interface NavbarProps {
   activeTab: string
   onSelectTab: (tab: string) => void
   onOpenApiKeyModal: () => void
+  onOpenSettingsModal: () => void
   hasApiKey: boolean
 }
 
@@ -35,8 +37,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   onSelectTab,
   onOpenApiKeyModal,
+  onOpenSettingsModal,
   hasApiKey,
 }) => {
+  const { user, isGuest } = useAuthContext()
+
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<LocationData[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -112,6 +117,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'community', label: 'Community Watch', icon: Users },
     { id: 'action-plan', label: 'Action Plan', icon: Printer },
   ]
+
+  const userInitials = (user?.name || 'G').slice(0, 2).toUpperCase()
 
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
@@ -317,7 +324,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Right Controls: Gemini AI Status & Settings */}
+          {/* Right Controls: Gemini AI Status, User Profile & Settings */}
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onOpenApiKeyModal}
@@ -336,6 +343,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {hasApiKey ? 'Live' : 'AI'}
               </span>
               {hasApiKey && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+            </button>
+
+            {/* User Profile & Settings Trigger */}
+            <button
+              onClick={onOpenSettingsModal}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-white cursor-pointer active:scale-95 transition-all"
+              title="Manage Profile & Settings"
+            >
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-[10px] font-black text-white">
+                {userInitials}
+              </div>
+              <span className="hidden sm:inline max-w-[90px] truncate text-slate-200">
+                {user?.name || (isGuest ? 'Guest' : 'User')}
+              </span>
             </button>
           </div>
         </div>

@@ -3,6 +3,12 @@ import { Sparkles, Wind, ShieldAlert, Loader2 } from 'lucide-react'
 import { useAirQuality } from './hooks/useAirQuality'
 import { useHouseholdProfile } from './hooks/useHouseholdProfile'
 import { getStoredGeminiKey } from './services/geminiService'
+import { AuthProvider } from './contexts/AuthContext'
+import { useAuthContext } from './contexts/useAuthContext'
+import { AuthContainer } from './components/auth/AuthContainer'
+import { OnboardingWizard } from './components/onboarding/OnboardingWizard'
+import { SettingsModal } from './components/settings/SettingsModal'
+import { isOnboardingComplete } from './services/onboardingService'
 import { Navbar } from './components/Navbar'
 import { BottomDockNav } from './components/BottomDockNav'
 import { AQIDashboard } from './components/AQIDashboard'
@@ -12,9 +18,18 @@ import { SustainableSwaps } from './components/SustainableSwaps'
 import { AuraAIChat } from './components/AuraAIChat'
 import { CommunityWatch } from './components/CommunityWatch'
 import { FamilyActionPlan } from './components/FamilyActionPlan'
+import type { LocationData } from './types'
 import './App.css'
 
-export function App() {
+function AppContent() {
+  const { isAuthenticated, isLoading: isLoadingAuth, user } = useAuthContext()
+
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
+    return isOnboardingComplete()
+  })
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+
   const { currentLocation, selectLocation, data: airQualityData, loading: isLoadingAQI, refresh } =
     useAirQuality()
   const { profile, updateProfile } = useHouseholdProfile()
@@ -27,6 +42,47 @@ export function App() {
     setHasApiKey(!!getStoredGeminiKey())
   }
 
+  const handleOnboardingFinish = (selectedLocation: LocationData | null) => {
+    if (selectedLocation) {
+      selectLocation(selectedLocation)
+    }
+    setHasCompletedOnboarding(true)
+  }
+
+  // 1. Loading Authentication State
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0b0f19] flex flex-col items-center justify-center space-y-4 text-white">
+        <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
+        <p className="text-xs text-slate-400">Initializing AirIQ CleanAir Session...</p>
+      </div>
+    )
+  }
+
+  // 2. Unauthenticated State -> Welcome Splash, Sign Up, Sign In, or Guest
+  if (!isAuthenticated) {
+    return (
+      <AuthContainer
+        onAuthSuccess={() => {
+          // If the newly authenticated user already has an onboarding profile completed, proceed
+          setHasCompletedOnboarding(isOnboardingComplete())
+        }}
+      />
+    )
+  }
+
+  // 3. Authenticated but Onboarding Not Completed -> 6-Step Duolingo Wizard
+  if (!hasCompletedOnboarding) {
+    return (
+      <OnboardingWizard
+        userName={user?.name || ''}
+        onCompleteOnboarding={handleOnboardingFinish}
+        onSkip={() => setHasCompletedOnboarding(true)}
+      />
+    )
+  }
+
+  // 4. Authenticated & Onboarded -> Main Full AirIQ Product Application
   return (
     <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 selection:bg-cyan-500/30 selection:text-cyan-200">
       {/* Navigation Header */}
@@ -37,6 +93,7 @@ export function App() {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         onOpenApiKeyModal={() => setIsKeyModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsOpen(true)}
         hasApiKey={hasApiKey}
       />
 
@@ -127,6 +184,16 @@ export function App() {
         airQualityData={airQualityData}
       />
 
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onReOnboard={() => {
+          setHasCompletedOnboarding(false)
+        }}
+        onOpenApiKeyModal={() => setIsKeyModalOpen(true)}
+      />
+
       {/* API Key Modal fallback container */}
       {isKeyModalOpen && activeTab !== 'aura-ai' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -198,6 +265,14 @@ export function App() {
         </div>
       </footer>
     </div>
+  )
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }
 
