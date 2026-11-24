@@ -1,0 +1,10 @@
+/* AirIQ Custom App Utility Styles */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  header, footer, nav, button {
+    display: none !important;
+  }
+}

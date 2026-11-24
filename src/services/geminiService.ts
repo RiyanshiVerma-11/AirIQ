@@ -1,0 +1,298 @@
+import { AirQualityData, HouseholdProfile } from '../types'
+
+const GEMINI_STORAGE_KEY = 'airiq_gemini_api_key'
+const GEMINI_MODEL_KEY = 'airiq_gemini_model'
+
+export function getStoredGeminiKey(): string {
+  try {
+    return localStorage.getItem(GEMINI_STORAGE_KEY) || ''
+  } catch {
+    return ''
+  }
+}
+
+export function setStoredGeminiKey(key: string): void {
+  try {
+    if (key.trim()) {
+      localStorage.setItem(GEMINI_STORAGE_KEY, key.trim())
+    } else {
+      localStorage.removeItem(GEMINI_STORAGE_KEY)
+    }
+  } catch (err) {
+    console.error('Failed to save API key to localStorage', err)
+  }
+}
+
+export function getStoredGeminiModel(): string {
+  try {
+    return localStorage.getItem(GEMINI_MODEL_KEY) || 'gemini-2.0-flash'
+  } catch {
+    return 'gemini-2.0-flash'
+  }
+}
+
+export function setStoredGeminiModel(model: string): void {
+  try {
+    localStorage.setItem(GEMINI_MODEL_KEY, model)
+  } catch (err) {
+    console.error('Failed to save model to localStorage', err)
+  }
+}
+
+export interface ChatContext {
+  currentAQI?: AirQualityData
+  householdProfile?: HouseholdProfile
+  userMessage: string
+  conversationHistory: { role: 'user' | 'assistant'; content: string }[]
+}
+
+export async function askAuraAssistant(context: ChatContext): Promise<string> {
+  const apiKey = getStoredGeminiKey()
+  const model = getStoredGeminiModel()
+
+  if (apiKey) {
+    try {
+      const response = await callGeminiLiveAPI(apiKey, model, context)
+      return response
+    } catch (err) {
+      console.warn('Live Gemini API call failed, falling back to local expert engine:', err)
+      return generateOfflineExpertResponse(context) + '\n\n*(Note: Live Gemini request had a network/auth issue; answered via local AirIQ domain intelligence.)*'
+    }
+  }
+
+  // Offline / Built-in mode
+  return generateOfflineExpertResponse(context)
+}
+
+async function callGeminiLiveAPI(
+  apiKey: string,
+  model: string,
+  context: ChatContext
+): Promise<string> {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+
+  const systemInstruction = `You are Aura, a senior Google GenAI Urban Air Quality & Environmental Health Specialist.
+Your mission is to help families, vulnerable individuals (infants, asthmatics, seniors), and neighborhood communities navigate severe winter smog and urban air pollution.
+Current Location Context: ${context.currentAQI ? `${context.currentAQI.location.name} (AQI: ${context.currentAQI.aqi}, PM2.5: ${context.currentAQI.pm25} µg/m³, Inversion Risk: ${context.currentAQI.inversionRisk})` : 'Urban Smog Hotspot'}.
+Household Profile: ${context.householdProfile ? `Children: ${context.householdProfile.children}, Seniors: ${context.householdProfile.seniors}, Asthma/COPD: ${context.householdProfile.hasAsthmaOrCOPD}, Commute: ${context.householdProfile.commuteMode}, Heating: ${context.householdProfile.winterHeating}, Cooking: ${context.householdProfile.cookingFuel}` : 'Standard Household'}.
+
+Response Guidelines:
+1. Ground your advice in aerosol physics, respiratory physiology, and building science (e.g. Corsi-Rosenthal boxes, diurnal boundary layer lift, N95 electrostatic filtration, negative kitchen pressure).
+2. Provide compassionate, clear, highly actionable, step-by-step guidance.
+3. Quantify impact where appropriate (e.g., % exposure drop, averted microgram inhalation, avoided emissions).
+4. If the user reports severe respiratory distress, immediately advise consulting emergency medical care while offering acute indoor air stabilization steps.
+5. Use bullet points and bold highlights for readability.`
+
+  const contents = [
+    {
+      role: 'user',
+      parts: [
+        {
+          text: `[SYSTEM CONTEXT & ROLE]\n${systemInstruction}\n\n[USER QUESTION]\n${context.userMessage}`,
+        },
+      ],
+    },
+  ]
+
+  // Add conversation history if available
+  if (context.conversationHistory && context.conversationHistory.length > 0) {
+    const recent = context.conversationHistory.slice(-4)
+    contents[0].parts[0].text = `[SYSTEM CONTEXT & ROLE]\n${systemInstruction}\n\n[RECENT CHAT HISTORY]\n` +
+      recent.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join('\n') +
+      `\n\n[LATEST USER QUESTION]\n${context.userMessage}`
+  }
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      },
+    }),
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    throw new Error(`Gemini API error (${response.status}): ${errorBody}`)
+  }
+
+  const data = await response.json()
+  const candidate = data.candidates?.[0]
+  const text = candidate?.content?.parts?.[0]?.text
+
+  if (!text) {
+    throw new Error('No text generated by Gemini model')
+  }
+
+  return text
+}
+
+export function generateOfflineExpertResponse(context: ChatContext): string {
+  const query = context.userMessage.toLowerCase()
+  const aqi = context.currentAQI?.aqi ?? 320
+  const pm25 = context.currentAQI?.pm25 ?? 240
+  const city = context.currentAQI?.location.name ?? 'your city'
+  const hasKids = (context.householdProfile?.children ?? 0) > 0
+  const hasAsthma = context.householdProfile?.hasAsthmaOrCOPD ?? false
+
+  // Coughing / Asthma / Medical query
+  if (query.includes('cough') || query.includes('throat') || query.includes('asthma') || query.includes('breathe') || query.includes('wheez')) {
+    return `### 🚨 Urgent Respiratory Relief & Smog Exposure Protocol
+
+With current ambient PM2.5 in **${city}** at **${pm25} µg/m³** (AQI **${aqi}**), fine particulates penetrate deep into the bronchioles and trigger acute mucosal inflammation and reactive airway spasms.
+
+#### 1. Immediate In-Room Stabilization (Next 10 Minutes):
+* **Create an Immediate Clean Room**: Move to the smallest bedroom. Close all doors and windows tightly.
+* **Run Purifier on Max**: Turn on your Corsi-Rosenthal box or HEPA unit on Maximum speed.
+* **Warm Hydration**: Drink warm water or herbal tea with honey. This thins out bronchopulmonary secretions and calms laryngeal irritation.
+* **Warm Steam Inhalation**: Inhaling gentle steam (from a clean vaporizer, no harsh balms) hydrates the dried upper airway mucosa.
+
+#### 2. Clinical Care & Medication:
+* If you or your child has a prescribed **reliever inhaler (e.g., Albuterol/Salbutamol)**, administer as prescribed by your physician using a spacer.
+* Keep emergency contact numbers readily accessible. If experiencing chest tightness, persistent wheezing, or difficulty speaking in full sentences, **seek immediate emergency medical attention**.
+
+#### 3. What to Avoid Right Now:
+* **NO dry sweeping or vacuuming** (resuspends toxic heavy metals right into the breathing zone).
+* **NO incense, mosquito coils, or unvented heaters** (a single mosquito coil emits PM2.5 equivalent to burning 75 cigarettes).`
+  }
+
+  // Corsi-Rosenthal / DIY Purifier
+  if (query.includes('corsi') || query.includes('rosenthal') || query.includes('diy') || query.includes('box fan') || query.includes('merv') || query.includes('filter')) {
+    return `### 🛠️ The Science of the Corsi-Rosenthal (C-R) Box
+
+The **Corsi-Rosenthal Box** is one of the most effective, peer-reviewed DIY clean air inventions available. It was engineered by aerosol scientists Richard Corsi and Jim Rosenthal to democratize high-CADR air cleaning during severe smog and pandemic emergencies.
+
+#### Why It Outperforms Most $400 Commercial Purifiers:
+1. **Massive Filtration Surface Area (>36 sq. ft.)**: Using 4 deep-pleated 20"x20" MERV 13 filters in a cube dramatically lowers *face velocity* (the speed air passes through the filter).
+2. **Low Static Pressure Resistance**: Because air passes slowly through the wide surface, the standard box fan experiences minimal backpressure, delivering a real-world **Clean Air Delivery Rate (CADR) of 450–550 CFM**.
+3. **The Critical Shroud**: Adding a cardboard donut ring (inner cutout ~14-15") over the front of the fan eliminates blade-tip back-circulation vortices, increasing clean airflow by **25-30%**.
+
+#### Quick Bill of Materials (~$65 total):
+* 1x 20"x20" 3-speed box fan (~$25)
+* 4x 20"x20"x2" MERV 13 filters (~$35 for bundle)
+* 1x roll heavy-duty duct tape & 1x cardboard bottom
+* *Assembly time: 20 minutes with zero specialized tools.*`
+  }
+
+  // Masks (N95 / surgical / cloth)
+  if (query.includes('mask') || query.includes('n95') || query.includes('cloth') || query.includes('surgical') || query.includes('respirator')) {
+    return `### 🛡️ Mask Science: N95/FFP2 vs Surgical vs Cloth
+
+In severe winter smog (current PM2.5: **${pm25} µg/m³** in ${city}), understanding mask mechanics is critical:
+
+| Mask Type | Filtration Mechanism | Real-World Smog Protection | Peripheral Leakage |
+| :--- | :--- | :--- | :--- |
+| **Head-strap N95 / FFP2** | Electrostatic meltblown polypropylene | **95–98%** | < 2% (tight facial contour) |
+| **Ear-loop KF94 / KN95** | Multi-layer electrocharged fiber | **80–90%** | 5–15% (looser cheek seal) |
+| **Surgical Mask** | Coarse fluid barrier | **15–30%** | 40–70% (massive edge bypass) |
+| **Cloth / Bandana** | Woven cotton threads | **5–15%** | Fails completely against PM2.5 |
+
+#### The Physics of Why Cloth Fails:
+Sub-2.5-micron particles are 30 times smaller than the diameter of a human hair. Woven cloth has microscopic weave gaps of 50–200 microns. Particulates pass through unimpeded. Furthermore, certified N95 respirators capture particles via **electrostatic attraction**, drawing microscopic aerosols to the charged fibers like a magnet.`
+  }
+
+  // Plants
+  if (query.includes('plant') || query.includes('spider') || query.includes('snake plant') || query.includes('areca') || query.includes('nasa')) {
+    return `### 🌿 Indoor Plants vs. Smog: Science vs Myth
+
+There is widespread confusion regarding indoor plants based on the famous 1989 NASA Clean Air Study. Here is the physical reality for winter smog:
+
+#### The Reality:
+* **What Plants Do Well**: Plants absorb small amounts of gaseous Volatile Organic Compounds (VOCs) like formaldehyde and benzene over many weeks, and improve biophilic psychological wellbeing.
+* **What Plants CANNOT Do**: Houseplants **do not filter particulate matter (PM2.5 or PM10)**. During an outdoor smog event of ${aqi} AQI, plants have zero Clean Air Delivery Rate (CADR = 0 CFM) for aerosols.
+* **The Math**: To match the particulate clean air delivery of a single small HEPA cleaner or Corsi-Rosenthal box, you would need **between 100 to 1,000 dense plants per room** and a powerful industrial fan blowing across their root soil zones.
+
+#### Recommended Strategy:
+Enjoy your indoor plants for greenery, but rely on **mechanical filtration (MERV 13 / True HEPA)** and **weatherstripping** to safeguard your lungs against winter smog.`
+  }
+
+  // Cooking / Kitchen
+  if (query.includes('cook') || query.includes('kitchen') || query.includes('fry') || query.includes('gas stove') || query.includes('induction')) {
+    return `### 🍳 Kitchen Micro-Zoning & Cooking Emission Mitigation
+
+Cooking is frequently the largest source of indoor particulate spikes during winter when homes are sealed against cold outdoor air.
+
+#### Why Cooking Spikes PM2.5:
+When cooking oils reach high heat (>180°C), thermal pyrolysis generates clouds of fine carbon soot and acrolein droplets. Frying spices or searing meats can spike indoor PM2.5 over **500 µg/m³** in a closed kitchen in under 15 minutes!
+
+#### 4 Rules for Safe Winter Cooking:
+1. **Pre-Evacuate with Exhaust**: Turn the kitchen exhaust hood on **before** you ignite the burner or heat the pan.
+2. **Door Barrier**: Keep the interior door between your kitchen and living/sleeping areas firmly closed.
+3. **The Make-Up Air Window**: Crack the kitchen window by 1 inch. This provides fresh replacement air for the exhaust fan, creating a strong **negative pressure gradient** that keeps fumes from migrating into bedrooms.
+4. **Switch to Induction**: Magnetic induction cooktops emit zero combustion gases (LPG burners emit significant NO2 and CO into room air).`
+  }
+
+  // Commute / Travel
+  if (query.includes('commute') || query.includes('traffic') || query.includes('car') || query.includes('metro') || query.includes('bike') || query.includes('walk')) {
+    return `### 🚗 Low-Exposure Winter Commute Strategies
+
+Roadside corridors during winter smog hours concentrate tailpipe exhaust, brake-wear dust, and resuspended road silt under stagnant ground inversions.
+
+#### If Driving a Car:
+* **AC Recirculation is Essential**: Always press the internal recirculation button (the curved arrow inside the car silhouette). This blocks incoming exhaust fumes and reduces cabin PM2.5 by **60–75%**.
+* **Upgrade to a HEPA/Carbon Cabin Filter**: Most standard factory cabin filters are coarse paper (MERV 6). Upgrading to an activated carbon + MERV 13 cabin filter keeps in-car air pristine.
+
+#### If Riding a Two-Wheeler / Walking:
+* Wear a snug head-strap **N95/FFP2 respirator**.
+* Avoid idling directly behind diesel buses, delivery trucks, or three-wheelers at traffic lights (step 2 meters to the side if safe).
+
+#### The Sustainable Choice:
+* Switching your commute to an **electric metro transit line** avoids up to 85g of PM2.5 emissions per month and shelters your lungs from toxic roadside combustion micro-environments.`
+  }
+
+  // Inversion / Weather
+  if (query.includes('inversion') || query.includes('weather') || query.includes('cold') || query.includes('morning') || query.includes('fog')) {
+    return `### 🌫️ Atmospheric Inversion Physics Explained
+
+Why is urban winter smog so severe between **6:00 AM – 9:30 AM** even when traffic seems normal?
+
+#### The Thermodynamic Mechanism:
+1. **Normal Daytime Atmospheric Gradient**: Warm air near the ground rises, carrying dust, smoke, and vehicle emissions high into the troposphere to disperse.
+2. **Nocturnal Radiative Cooling**: In winter, calm night skies cause the earth’s surface to rapidly lose heat through infrared radiation. The air layer directly touching the ground chills rapidly.
+3. **The Inversion "Lid"**: A layer of warmer, lighter air forms directly above this chilled ground layer. Warmer air above cooler air creates an extremely stable, airtight cap (boundary layer compressed below 150m).
+4. **The Pressure Cooker Effect**: Every morning vehicle cold start, wood fire, and factory plume emitted into this shallow lid has nowhere to go. It concentrates right at breathing height until the midday sun warms the ground, breaking the lid around **12:30 PM–1:00 PM**.`
+  }
+
+  // Default holistic response
+  return `### 🌟 Welcome to AirIQ Urban CleanAir Intelligence
+
+Currently in **${city}**, ambient conditions reflect an AQI of **${aqi}** with PM2.5 at **${pm25} µg/m³** (${context.currentAQI?.inversionRisk ?? 'High'} Inversion Risk).
+
+Here are 3 high-impact steps tailored for ${hasKids ? 'families with young children' : hasAsthma ? 'respiratory sensitivity' : 'your household'}:
+
+1. **Avoid the 06:00–09:30 Morning Inversion Window**: Postpone morning jogs or walks. Atmospheric mixing height is compressed below 150 meters, concentrating tailpipe soot at breathing height.
+2. **Designate a Clean Air Sanctuary Bedroom**: Run a Corsi-Rosenthal box or HEPA unit in the primary bedroom with windows and doors weather-stripped.
+3. **Utilize the 12:30–15:30 Solar Window**: Conduct essential outdoor errands and rapid 15-minute flush ventilation when solar warming expands the boundary layer and ambient smog drops to diurnal lows.
+
+*Feel free to ask me about DIY Corsi-Rosenthal builds, child respiratory safety, kitchen exhaust hacks, low-emission commute swaps, or community smog reporting!*`
+}
+
+export async function testGeminiAPIKey(apiKey: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: 'Hello, respond with: "AirIQ Live Connected"' }] }],
+        generationConfig: { maxOutputTokens: 20 },
+      }),
+    })
+
+    if (!response.ok) {
+      const err = await response.text()
+      return { success: false, message: `Validation failed (${response.status}): ${err.slice(0, 150)}` }
+    }
+
+    const data = await response.json()
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    return { success: true, message: `Connected to Gemini! Response: "${text.trim()}"` }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return { success: false, message: `Network error connecting to Gemini API: ${msg}` }
+  }
+}
