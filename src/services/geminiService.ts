@@ -3,6 +3,54 @@ import { AirQualityData, HouseholdProfile } from '../types'
 const GEMINI_STORAGE_KEY = 'airiq_gemini_api_key'
 const GEMINI_MODEL_KEY = 'airiq_gemini_model'
 
+export type AuraPersona = 'general' | 'pediatric' | 'engineering' | 'commute' | 'policy'
+
+export interface PersonaMetadata {
+  id: AuraPersona
+  title: string
+  subtitle: string
+  icon: string
+  instructionBonus: string
+}
+
+export const AURA_PERSONAS: PersonaMetadata[] = [
+  {
+    id: 'general',
+    title: 'General Health & IAQ',
+    subtitle: 'Comprehensive whole-home protection and smog navigation',
+    icon: '🌟',
+    instructionBonus: 'Provide holistic air quality guidance covering indoor filtration, daily routines, and household swaps.',
+  },
+  {
+    id: 'pediatric',
+    title: 'Pediatric & Vulnerable Care',
+    subtitle: 'Specialized airway protection for infants, asthmatics, and seniors',
+    icon: '👶',
+    instructionBonus: 'Prioritize pediatric respiratory physiology: alveolar surface vulnerability in children, infant breathing rates, nocturnal asthma triage, spacer inhalation technique, and micro-zoned bedroom clean air.',
+  },
+  {
+    id: 'engineering',
+    title: 'Corsi-Rosenthal Engineering',
+    subtitle: 'Aerosol mechanics, MERV-13 aerodynamics, CADR & ACH calculations',
+    icon: '🛠️',
+    instructionBonus: 'Emphasize aerosol mass-balance physics: CADR calculation, CFM curves, filter face-velocity, static backpressure, cardboard shroud vortex reduction, and ACH decay rates.',
+  },
+  {
+    id: 'commute',
+    title: 'Low-Emission Commute',
+    subtitle: 'Active transit, electric micro-mobility, and in-transit cabin exposure',
+    icon: '🚲',
+    instructionBonus: 'Focus on in-transit particulate inhalation: vehicle cabin HEPA recirculation (cuts cabin PM2.5 by 85%), N95 edge-seal on mass transit, timing departures around diurnal boundary layer lift, and cycling emission mitigation.',
+  },
+  {
+    id: 'policy',
+    title: 'Airshed Policy & Law',
+    subtitle: 'Citizen enforcement, open burning bans, and community action',
+    icon: '⚖️',
+    instructionBonus: 'Highlight collective action: local municipal burning ordinances, citizen reporting protocols under National Clean Air Programmes / Clean Air Acts, and neighborhood airshed advocacy.',
+  },
+]
+
 export function getStoredGeminiKey(): string {
   try {
     return localStorage.getItem(GEMINI_STORAGE_KEY) || ''
@@ -44,6 +92,7 @@ export interface ChatContext {
   householdProfile?: HouseholdProfile
   userMessage: string
   conversationHistory: { role: 'user' | 'assistant'; content: string }[]
+  persona?: AuraPersona
 }
 
 export async function askAuraAssistant(context: ChatContext): Promise<string> {
@@ -71,17 +120,19 @@ async function callGeminiLiveAPI(
 ): Promise<string> {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
-  const systemInstruction = `You are Aura, a senior Google GenAI Urban Air Quality & Environmental Health Specialist.
-Your mission is to help families, vulnerable individuals (infants, asthmatics, seniors), and neighborhood communities navigate severe winter smog and urban air pollution.
+  const personaMeta = AURA_PERSONAS.find((p) => p.id === context.persona) || AURA_PERSONAS[0]
+
+  const systemInstruction = `You are Aura, acting as ${personaMeta.title} (${personaMeta.subtitle}) in Google GenAI Urban Air Quality & Environmental Health.
+Specialized Persona Directive: ${personaMeta.instructionBonus}
 Current Location Context: ${context.currentAQI ? `${context.currentAQI.location.name} (AQI: ${context.currentAQI.aqi}, PM2.5: ${context.currentAQI.pm25} µg/m³, Inversion Risk: ${context.currentAQI.inversionRisk})` : 'Urban Smog Hotspot'}.
 Household Profile: ${context.householdProfile ? `Children: ${context.householdProfile.children}, Seniors: ${context.householdProfile.seniors}, Asthma/COPD: ${context.householdProfile.hasAsthmaOrCOPD}, Commute: ${context.householdProfile.commuteMode}, Heating: ${context.householdProfile.winterHeating}, Cooking: ${context.householdProfile.cookingFuel}` : 'Standard Household'}.
 
 Response Guidelines:
 1. Ground your advice in aerosol physics, respiratory physiology, and building science (e.g. Corsi-Rosenthal boxes, diurnal boundary layer lift, N95 electrostatic filtration, negative kitchen pressure).
-2. Provide compassionate, clear, highly actionable, step-by-step guidance.
+2. Emphasize your specialized role (${personaMeta.title}) while remaining compassionate, clear, highly actionable, and step-by-step.
 3. Quantify impact where appropriate (e.g., % exposure drop, averted microgram inhalation, avoided emissions).
 4. If the user reports severe respiratory distress, immediately advise consulting emergency medical care while offering acute indoor air stabilization steps.
-5. Use bullet points and bold highlights for readability.`
+5. Use bullet points, bold highlights, and clean markdown for readability.`
 
   const contents = [
     {

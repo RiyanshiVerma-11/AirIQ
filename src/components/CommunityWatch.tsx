@@ -1,9 +1,17 @@
-import React, { useState } from 'react'
-import { Users, AlertTriangle, PlusCircle, Sparkles } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { Users, AlertTriangle, PlusCircle, Sparkles, Search, Filter } from 'lucide-react'
 import { useCommunityData } from '../hooks/useCommunityData'
 import { SmogReportForm } from './community/SmogReportForm'
 import { ReportItemCard } from './community/ReportItemCard'
 import { ChallengeItemCard } from './community/ChallengeItemCard'
+
+const CATEGORY_FILTERS = [
+  { id: 'all', label: 'All Incidents', icon: '🚨' },
+  { id: 'biomass_leaf_burning', label: 'Leaf & Biomass Burning', icon: '🍂' },
+  { id: 'construction_dust_uncovered', label: 'Construction Dust', icon: '🏗️' },
+  { id: 'vehicular_idling_hotspot', label: 'Diesel Idling Hotspots', icon: '🚚' },
+  { id: 'illegal_waste_incineration', label: 'Plastic/Waste Burning', icon: '🔥' },
+]
 
 export const CommunityWatch: React.FC = () => {
   const {
@@ -15,6 +23,21 @@ export const CommunityWatch: React.FC = () => {
   } = useCommunityData()
 
   const [showReportForm, setShowReportForm] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+
+  const filteredReports = useMemo(() => {
+    return reports.filter((r) => {
+      const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory
+      const query = searchQuery.toLowerCase().trim()
+      const matchesSearch =
+        !query ||
+        r.locationNeighborhood.toLowerCase().includes(query) ||
+        r.description.toLowerCase().includes(query) ||
+        r.reporterName.toLowerCase().includes(query)
+      return matchesCategory && matchesSearch
+    })
+  }, [reports, selectedCategory, searchQuery])
 
   return (
     <div className="space-y-6">
@@ -89,15 +112,66 @@ export const CommunityWatch: React.FC = () => {
           />
         )}
 
+        {/* Live Reports Feed Header with Search & Filters */}
+        <div className="space-y-3 pt-1">
+          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search reports by street, neighborhood, or violation keyword..."
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              />
+            </div>
+
+            {/* Results counter */}
+            <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1.5 shrink-0 px-1">
+              <Filter className="w-3 h-3 text-cyan-400" />
+              <span>Showing {filteredReports.length} of {reports.length} reports</span>
+            </div>
+          </div>
+
+          {/* Category Filter Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+            {CATEGORY_FILTERS.map((cat) => {
+              const active = selectedCategory === cat.id
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer border ${
+                    active
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/60 shadow-sm shadow-rose-500/20'
+                      : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                  }`}
+                >
+                  <span>{cat.icon}</span>
+                  <span>{cat.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Live Reports Feed */}
         <div className="space-y-3">
-          {reports.map((report) => (
-            <ReportItemCard
-              key={report.id}
-              report={report}
-              onUpvote={upvoteReport}
-            />
-          ))}
+          {filteredReports.length > 0 ? (
+            filteredReports.map((report) => (
+              <ReportItemCard
+                key={report.id}
+                report={report}
+                onUpvote={upvoteReport}
+              />
+            ))
+          ) : (
+            <div className="p-8 text-center rounded-xl bg-slate-950/50 border border-slate-800 text-xs text-slate-400 space-y-1">
+              <p className="font-semibold text-slate-300">No smog violations match your current filters</p>
+              <p className="text-[11px] text-slate-500">Try clearing the search query or selecting "All Incidents"</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

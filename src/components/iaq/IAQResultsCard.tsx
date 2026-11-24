@@ -2,6 +2,7 @@ import React from 'react'
 import { DollarSign, Sparkles } from 'lucide-react'
 import type { IAQSimulationResult } from '../../types'
 import { getCategoryBadgeColor } from '../../services/airQualityService'
+import { IAQDecayCurve } from './IAQDecayCurve'
 
 interface IAQResultsCardProps {
   result: IAQSimulationResult
@@ -111,6 +112,9 @@ export const IAQResultsCard: React.FC<IAQResultsCardProps> = ({ result, outdoorP
           )}
         </div>
       </div>
+
+      {/* 60-Minute Dynamic Aerosol Decay Curve */}
+      <IAQDecayCurve initialOutdoorPM25={outdoorPM25} result={result} />
 
       {/* Quick Science Explanation Note */}
       <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 text-xs text-slate-400 space-y-1.5">

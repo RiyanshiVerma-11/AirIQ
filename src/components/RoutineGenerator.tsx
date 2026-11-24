@@ -1,7 +1,10 @@
-import React, { useState } from 'react'
-import { Clock, Sliders, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
-import type { AirQualityData, HouseholdProfile } from '../types'
-import { generateDailySmogRoutine } from '../services/routineGeneratorService'
+import React, { useState, useCallback, useMemo } from 'react'
+import { Clock, Sliders, Sparkles, ChevronDown, ChevronUp, Loader2, Wand2 } from 'lucide-react'
+import type { AirQualityData, DailySmogRoutine, HouseholdProfile, RoutineTimeSlot } from '../types'
+import {
+  generateDynamicRoutine,
+  synthesizeProgrammaticDynamicRoutine,
+} from '../services/aiRoutineGenerator'
 import { ProfileCustomizer } from './routine/ProfileCustomizer'
 import { RoutineSummaryCards } from './routine/RoutineSummaryCards'
 import { HourlySlotCard } from './routine/HourlySlotCard'
@@ -19,7 +22,25 @@ export const RoutineGenerator: React.FC<RoutineGeneratorProps> = ({
   airQualityData,
 }) => {
   const [showProfileEditor, setShowProfileEditor] = useState(false)
-  const routine = generateDailySmogRoutine(profile, airQualityData)
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false)
+  const [customAIRoutine, setCustomAIRoutine] = useState<DailySmogRoutine | null>(null)
+
+  const programmaticRoutine = useMemo(
+    () => synthesizeProgrammaticDynamicRoutine(profile, airQualityData),
+    [profile, airQualityData]
+  )
+
+  const routine = customAIRoutine ?? programmaticRoutine
+
+  const handleTriggerGenAI = useCallback(async () => {
+    setIsGeneratingAI(true)
+    try {
+      const generated = await generateDynamicRoutine(profile, airQualityData)
+      setCustomAIRoutine(generated)
+    } finally {
+      setIsGeneratingAI(false)
+    }
+  }, [profile, airQualityData])
 
   return (
     <div className="space-y-6">
@@ -33,19 +54,34 @@ export const RoutineGenerator: React.FC<RoutineGeneratorProps> = ({
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-300">
-            Tailored hour-by-hour schedule designed to shield your family’s lungs and eliminate discretionary winter emissions in{' '}
+            Dynamically synthesized hour-by-hour schedule designed to shield your family’s lungs and eliminate discretionary winter emissions in{' '}
             <strong className="text-white">{airQualityData.location.name}</strong> (AQI: {airQualityData.aqi}).
           </p>
         </div>
 
-        <button
-          onClick={() => setShowProfileEditor(!showProfileEditor)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all self-start sm:self-center"
-        >
-          <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-          <span>{showProfileEditor ? 'Close Household Profile' : 'Edit Household Profile'}</span>
-          {showProfileEditor ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+          <button
+            onClick={handleTriggerGenAI}
+            disabled={isGeneratingAI}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-cyan-600/20 disabled:opacity-50 transition-all cursor-pointer"
+          >
+            {isGeneratingAI ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Wand2 className="w-3.5 h-3.5" />
+            )}
+            <span>{isGeneratingAI ? 'Synthesizing...' : 'Synthesize with GenAI'}</span>
+          </button>
+
+          <button
+            onClick={() => setShowProfileEditor(!showProfileEditor)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all cursor-pointer"
+          >
+            <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+            <span>{showProfileEditor ? 'Close Profile' : 'Edit Profile'}</span>
+            {showProfileEditor ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+        </div>
       </div>
 
       {/* Household Profile Customizer */}
@@ -64,12 +100,12 @@ export const RoutineGenerator: React.FC<RoutineGeneratorProps> = ({
             Hour-by-Hour Smog Shield Schedule
           </h2>
           <span className="text-xs text-slate-400">
-            Ground-truth atmospheric physics combined with family safety protocols
+            Synthesized dynamically at {routine.generatedAt}
           </span>
         </div>
 
         <div className="space-y-3">
-          {routine.slots.map((slot, index) => (
+          {routine.slots.map((slot: RoutineTimeSlot, index: number) => (
             <HourlySlotCard key={index} slot={slot} />
           ))}
         </div>

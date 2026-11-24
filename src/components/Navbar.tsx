@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Wind,
   Shield,
@@ -9,9 +9,14 @@ import {
   Key,
   Flame,
   CheckCircle2,
+  MapPin,
+  Search,
+  Loader2,
 } from 'lucide-react'
-import { AirQualityData, LocationData } from '../types'
-import { PRESET_LOCATIONS, getCategoryBadgeColor } from '../services/airQualityService'
+import type { AirQualityData, LocationData } from '../types'
+import { PRESET_LOCATIONS } from '../constants/locations'
+import { getCategoryBadgeColor } from '../services/airQualityService'
+import { searchGlobalLocations, detectUserGeolocation } from '../services/geocodingService'
 
 interface NavbarProps {
   currentLocation: LocationData
@@ -32,9 +37,71 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenApiKeyModal,
   hasApiKey,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<LocationData[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false)
+  const [isDetectingGps, setIsDetectingGps] = useState(false)
+
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
   const badgeStyle = airQualityData
     ? getCategoryBadgeColor(airQualityData.category)
     : { bg: 'bg-gray-800', text: 'text-gray-300', border: 'border-gray-700', hex: '#9ca3af' }
+
+  // Handle outside click to close search dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowSearchDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val)
+    setShowSearchDropdown(true)
+    if (!val.trim() || val.trim().length < 2) {
+      setSearchResults([])
+      setIsSearching(false)
+    }
+  }
+
+  // Debounced search for global locations
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const results = await searchGlobalLocations(searchQuery)
+        setSearchResults(results)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  const handleGpsDetect = async () => {
+    setIsDetectingGps(true)
+    try {
+      const loc = await detectUserGeolocation()
+      if (loc) {
+        onSelectLocation(loc)
+        setShowSearchDropdown(false)
+      }
+    } catch {
+      alert('Could not access GPS. Please check browser location permissions or search for your city directly.')
+    } finally {
+      setIsDetectingGps(false)
+    }
+  }
 
   const navItems = [
     { id: 'dashboard', label: 'Smog Radar', icon: Wind },
@@ -74,27 +141,78 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Center Location Selector & Live AQI Pill */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-sm">
-              <span className="text-base">{currentLocation.flag}</span>
-              <select
-                aria-label="Select City"
-                value={currentLocation.id}
-                onChange={(e) => {
-                  const found = PRESET_LOCATIONS.find((l) => l.id === e.target.value)
-                  if (found) onSelectLocation(found)
-                }}
-                className="bg-transparent text-slate-200 text-xs sm:text-sm font-medium focus:outline-none cursor-pointer"
-              >
-                {PRESET_LOCATIONS.map((loc) => (
-                  <option key={loc.id} value={loc.id} className="bg-slate-900 text-slate-200">
-                    {loc.name}, {loc.country}
-                  </option>
-                ))}
-              </select>
+          {/* Dynamic Global Search & Location Selector */}
+          <div className="relative hidden md:flex items-center gap-2" ref={dropdownRef}>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-sm focus-within:border-cyan-500 transition-colors">
+              <Search className="w-3.5 h-3.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder={`${currentLocation.name}... (Search any global city)`}
+                value={searchQuery}
+                onFocus={() => setShowSearchDropdown(true)}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="bg-transparent text-slate-200 text-xs w-48 focus:outline-none placeholder-slate-400"
+              />
+              {isSearching ? (
+                <Loader2 className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleGpsDetect}
+                  disabled={isDetectingGps}
+                  title="Detect my current location with GPS"
+                  className="p-1 rounded text-slate-400 hover:text-cyan-400 cursor-pointer transition-colors"
+                >
+                  <MapPin className={`w-3.5 h-3.5 ${isDetectingGps ? 'animate-bounce text-cyan-400' : ''}`} />
+                </button>
+              )}
             </div>
 
+            {/* Dropdown Menu for Global Search Results & Presets */}
+            {showSearchDropdown && (
+              <div className="absolute top-11 left-0 w-80 rounded-xl border border-slate-800 bg-slate-950 p-2 shadow-2xl z-50 text-xs space-y-1 max-h-80 overflow-y-auto">
+                <button
+                  onClick={handleGpsDetect}
+                  className="w-full flex items-center gap-2 p-2 rounded-lg bg-cyan-950/40 text-cyan-300 border border-cyan-800/40 hover:bg-cyan-900/50 text-left font-semibold cursor-pointer"
+                >
+                  <MapPin className="w-4 h-4 text-cyan-400 shrink-0" />
+                  <span>Use My Current GPS Location</span>
+                </button>
+
+                <div className="text-[10px] uppercase font-bold text-slate-500 px-2 pt-2">
+                  {searchResults.length > 0 ? 'Search Results' : 'Global Winter Smog Hotspots'}
+                </div>
+
+                {(searchResults.length > 0 ? searchResults : PRESET_LOCATIONS).map((loc) => (
+                  <button
+                    key={loc.id}
+                    onClick={() => {
+                      onSelectLocation(loc)
+                      setShowSearchDropdown(false)
+                      setSearchQuery('')
+                    }}
+                    className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors cursor-pointer ${
+                      currentLocation.id === loc.id
+                        ? 'bg-slate-800 text-white font-bold'
+                        : 'text-slate-300 hover:bg-slate-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span>{loc.flag}</span>
+                      <div>
+                        <div className="font-medium text-white">{loc.name}</div>
+                        <div className="text-[10px] text-slate-400">{loc.region}, {loc.country}</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      {loc.latitude.toFixed(1)}°, {loc.longitude.toFixed(1)}°
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Current AQI Badge */}
             {airQualityData && (
               <div
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${badgeStyle.bg} ${badgeStyle.border} ${badgeStyle.text} text-xs font-semibold`}
@@ -111,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={onOpenApiKeyModal}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
                 hasApiKey
                   ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/50'
                   : 'bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800'
@@ -136,7 +254,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? item.highlight
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-sm shadow-cyan-500/20 font-semibold'

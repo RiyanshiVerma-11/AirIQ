@@ -7,6 +7,7 @@ import {
   setStoredGeminiKey,
   setStoredGeminiModel,
   testGeminiAPIKey,
+  type AuraPersona,
 } from '../services/geminiService'
 
 export interface ChatMessage {
@@ -37,6 +38,7 @@ export function useGeminiChat(airQualityData?: AirQualityData, profile?: Househo
   const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_WELCOME_MESSAGE])
   const [isLoading, setIsLoading] = useState(false)
   const [hasApiKey, setHasApiKey] = useState(() => !!getStoredGeminiKey())
+  const [activePersona, setActivePersona] = useState<AuraPersona>('general')
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -59,6 +61,7 @@ export function useGeminiChat(airQualityData?: AirQualityData, profile?: Househo
           householdProfile: profile,
           userMessage: text,
           conversationHistory: history,
+          persona: activePersona,
         })
 
         const assistantMsg: ChatMessage = {
@@ -82,7 +85,7 @@ export function useGeminiChat(airQualityData?: AirQualityData, profile?: Househo
         setIsLoading(false)
       }
     },
-    [airQualityData, profile, messages, isLoading]
+    [airQualityData, profile, messages, isLoading, activePersona]
   )
 
   const clearMessages = useCallback(() => {
@@ -108,6 +111,8 @@ export function useGeminiChat(airQualityData?: AirQualityData, profile?: Househo
     messages,
     isLoading,
     hasApiKey,
+    activePersona,
+    setActivePersona,
     sendMessage,
     clearMessages,
     saveApiKey,

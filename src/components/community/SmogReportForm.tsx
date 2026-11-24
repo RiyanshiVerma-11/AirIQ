@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
+import { Navigation } from 'lucide-react'
 import type { CommunityReport } from '../../types'
+import { detectUserGeolocation } from '../../services/geocodingService'
 
 interface SmogReportFormProps {
   onSubmit: (report: Omit<CommunityReport, 'id' | 'timestamp' | 'status' | 'upvotes'>) => void
@@ -12,6 +14,24 @@ export const SmogReportForm: React.FC<SmogReportFormProps> = ({ onSubmit, onCanc
   const [category, setCategory] = useState<CommunityReport['category']>('biomass_leaf_burning')
   const [severity, setSeverity] = useState<CommunityReport['severity']>('high')
   const [description, setDescription] = useState('')
+  const [isLocating, setIsLocating] = useState(false)
+  const [geoNotice, setGeoNotice] = useState<string | null>(null)
+
+  const handleGeoTag = async () => {
+    setIsLocating(true)
+    setGeoNotice(null)
+    try {
+      const geo = await detectUserGeolocation()
+      if (geo) {
+        setNeighborhood(`${geo.name}, ${geo.region} (GPS: ${geo.latitude.toFixed(3)}, ${geo.longitude.toFixed(3)})`)
+        setGeoNotice(`📍 Coordinates pinned to ${geo.name}`)
+      }
+    } catch (err: unknown) {
+      setGeoNotice(err instanceof Error ? err.message : 'Could not detect location')
+    } finally {
+      setIsLocating(false)
+    }
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +66,18 @@ export const SmogReportForm: React.FC<SmogReportFormProps> = ({ onSubmit, onCanc
         </div>
 
         <div>
-          <label className="text-slate-300 font-semibold block mb-1">Neighborhood / Street:</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-slate-300 font-semibold">Neighborhood / Street:</label>
+            <button
+              type="button"
+              onClick={handleGeoTag}
+              disabled={isLocating}
+              className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer disabled:opacity-50"
+            >
+              <Navigation className="w-3 h-3" />
+              <span>{isLocating ? 'Detecting...' : 'Auto-detect GPS'}</span>
+            </button>
+          </div>
           <input
             type="text"
             required
@@ -55,6 +86,9 @@ export const SmogReportForm: React.FC<SmogReportFormProps> = ({ onSubmit, onCanc
             placeholder="e.g. Sector 18 Park Lane"
             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-white"
           />
+          {geoNotice && (
+            <p className="text-[10px] text-emerald-400 mt-1">{geoNotice}</p>
+          )}
         </div>
       </div>
 

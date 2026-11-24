@@ -4,6 +4,7 @@ import type { HouseholdProfile } from '../types'
 import { SUSTAINABLE_ALTERNATIVES } from '../constants/alternatives'
 import { calculateHouseholdImpact } from '../services/alternativesEngineService'
 import { HouseholdImpactGrid } from './swaps/HouseholdImpactGrid'
+import { CustomHabitCalculator } from './swaps/CustomHabitCalculator'
 import { CommunityScaleSlider } from './swaps/CommunityScaleSlider'
 import { AlternativeCard } from './swaps/AlternativeCard'
 
@@ -49,6 +50,9 @@ export const SustainableSwaps: React.FC<SustainableSwapsProps> = ({ profile }) =
 
       {/* Personalized Household Clean-Air Dashboard */}
       <HouseholdImpactGrid impact={householdImpact} />
+
+      {/* Dynamic Custom Commute & Habit Calculator */}
+      <CustomHabitCalculator />
 
       {/* Community Multiplier Simulator */}
       <CommunityScaleSlider
