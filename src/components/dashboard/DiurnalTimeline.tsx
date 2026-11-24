@@ -33,8 +33,8 @@ export const DiurnalTimeline: React.FC<DiurnalTimelineProps> = ({ hourlyForecast
         </div>
       </div>
 
-      {/* Hourly Timeline Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2">
+      {/* Hourly Timeline Grid (Horizontally scrollable on mobile, grid on desktop) */}
+      <div className="flex sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2 overflow-x-auto pb-2 scrollbar-thin snap-x snap-mandatory sm:snap-none sm:overflow-visible">
         {hourlyForecast.slice(0, 12).map((hour, idx) => {
           const hBadge = getCategoryBadgeColor(
             hour.aqi <= 50
@@ -53,7 +53,7 @@ export const DiurnalTimeline: React.FC<DiurnalTimelineProps> = ({ hourlyForecast
           return (
             <div
               key={idx}
-              className={`p-2.5 rounded-xl border text-center transition-all ${
+              className={`shrink-0 w-24 sm:w-auto snap-center p-2.5 rounded-xl border text-center transition-all ${
                 hour.isOptimalVentilationWindow
                   ? 'border-emerald-500/80 bg-emerald-950/30 shadow-lg shadow-emerald-950/30 ring-1 ring-emerald-500/40'
                   : hour.isPeakSmogDanger

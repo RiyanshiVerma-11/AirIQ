@@ -98,7 +98,7 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({
   return (
     <div className="space-y-4">
       {/* Chat Container Box */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl flex flex-col h-[750px] overflow-hidden">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl flex flex-col h-[calc(100dvh-11rem)] min-h-[480px] md:h-[750px] overflow-hidden">
         {/* Chat Header Bar */}
         <div className="p-4 border-b border-slate-800 bg-slate-950/80 space-y-3">
           <div className="flex items-center justify-between gap-3">

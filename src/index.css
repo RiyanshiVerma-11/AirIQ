@@ -50,6 +50,11 @@
   box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.15);
 }
 
+/* Safe area insets for mobile bottom dock */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
 /* Custom animations */
 @keyframes pulseGlow {
   0%, 100% { opacity: 0.4; }

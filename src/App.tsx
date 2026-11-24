@@ -4,6 +4,7 @@ import { useAirQuality } from './hooks/useAirQuality'
 import { useHouseholdProfile } from './hooks/useHouseholdProfile'
 import { getStoredGeminiKey } from './services/geminiService'
 import { Navbar } from './components/Navbar'
+import { BottomDockNav } from './components/BottomDockNav'
 import { AQIDashboard } from './components/AQIDashboard'
 import { RoutineGenerator } from './components/RoutineGenerator'
 import { IAQSimulator } from './components/IAQSimulator'
@@ -40,7 +41,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-28 md:pb-8">
         {isLoadingAQI && !airQualityData ? (
           <div className="flex flex-col items-center justify-center h-96 space-y-4">
             <Loader2 className="w-10 h-10 text-cyan-400 animate-spin" />
@@ -107,17 +108,24 @@ export function App() {
         )}
       </main>
 
-      {/* Floating Aura AI Quick Launcher */}
+      {/* Floating Aura AI Quick Launcher (Desktop only) */}
       {activeTab !== 'aura-ai' && airQualityData && (
         <button
           onClick={() => setActiveTab('aura-ai')}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white shadow-xl shadow-cyan-600/30 hover:scale-105 transition-all text-xs font-bold print:hidden cursor-pointer"
+          className="hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white shadow-xl shadow-cyan-600/30 hover:scale-105 transition-all text-xs font-bold print:hidden cursor-pointer"
         >
           <Sparkles className="w-4 h-4 animate-spin text-cyan-200" />
           <span>Ask Aura AI</span>
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
         </button>
       )}
+
+      {/* Mobile Sticky Bottom Navigation Dock */}
+      <BottomDockNav
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
+        airQualityData={airQualityData}
+      />
 
       {/* API Key Modal fallback container */}
       {isKeyModalOpen && activeTab !== 'aura-ai' && (
@@ -152,7 +160,7 @@ export function App() {
       )}
 
       {/* Scientific & Engineering Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/90 py-8 text-xs text-slate-400 print:hidden mt-auto">
+      <footer className="border-t border-slate-900 bg-slate-950/90 py-8 text-xs text-slate-400 print:hidden mt-auto mb-16 md:mb-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-900 pb-4">
             <div className="flex items-center gap-2">

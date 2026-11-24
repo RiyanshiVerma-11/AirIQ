@@ -95,17 +95,17 @@ export const AQIHeroCard: React.FC<AQIHeroCardProps> = ({ data, onNavigateTab })
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => onNavigateTab('routine')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold shadow-md active:scale-98 transition-all cursor-pointer"
           >
             <span>Build Family Routine</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onNavigateTab('iaq-lab')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold active:scale-98 transition-all cursor-pointer"
           >
             <span>Test IAQ Hacks</span>
           </button>
