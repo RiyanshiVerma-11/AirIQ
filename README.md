@@ -146,5 +146,30 @@ To connect Aura to live Google Gemini 2.0 Flash:
 
 ---
 
+## 🚀 One-Click Deployment to Render
+
+AirIQ is pre-configured for **Render** via two zero-friction deployment strategies:
+
+### Option A: Static Site on Render (Recommended — 100% Free & Fast CDN)
+1. Push your code to GitHub.
+2. In the [Render Dashboard](https://dashboard.render.com), click **New +** → **Static Site**.
+3. Connect your repository.
+4. Render will auto-detect settings, or configure:
+   - **Build Command**: `npm install && npm run build`
+   - **Publish Directory**: `dist`
+5. Click **Create Static Site**.
+*(Note: AirIQ includes `render.yaml` and `public/_redirects` to handle Single Page App routing automatically!)*
+
+### Option B: Render Web Service (Node.js)
+1. In the Render Dashboard, click **New +** → **Web Service**.
+2. Connect your repository.
+3. Configure:
+   - **Runtime**: Node
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start` (Runs our built-in standalone production server `server.mjs` on `$PORT`)
+4. Click **Create Web Service**.
+
+---
+
 ## 🛡️ License
 Built for **[Challenge 6] Urban Air Quality Assistant**. Open-source educational and public health software.
