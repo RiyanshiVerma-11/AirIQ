@@ -22,24 +22,24 @@ export const FamilyActionPlan: React.FC<FamilyActionPlanProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner & Print Trigger */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl print:hidden">
-        <div className="space-y-1">
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Open Modern Header & Print Trigger */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-800/60 pb-5 print:hidden">
+        <div className="space-y-1 max-w-2xl">
           <div className="flex items-center gap-2">
             <Printer className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-xl sm:text-2xl font-extrabold text-white">
-              Printable Family Smog Defense Action Plan
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Family Smog Defense Action Plan
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300">
-            A comprehensive, one-page emergency protocol sheet ready to print and stick on the refrigerator or family noticeboard.
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            One-page protocol sheet ready to print and post on the refrigerator or family noticeboard during severe smog episodes.
           </p>
         </div>
 
         <button
           onClick={handlePrint}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-600/20 transition-all self-start sm:self-center cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md shadow-cyan-950/40 transition-all self-start sm:self-auto cursor-pointer"
         >
           <Printer className="w-4 h-4" />
           <span>Print / Save as PDF</span>
@@ -47,30 +47,30 @@ export const FamilyActionPlan: React.FC<FamilyActionPlanProps> = ({
       </div>
 
       {/* Printable Sheet Container */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 sm:p-8 space-y-6 text-slate-200 print:border-none print:p-0 print:text-black print:bg-white">
+      <div className="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5 sm:p-7 space-y-6 text-slate-200 print:border-none print:p-0 print:text-black print:bg-white">
         {/* Header Section */}
-        <div className="border-b border-slate-800 print:border-black pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="border-b border-slate-800/60 print:border-black pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="text-xs uppercase font-extrabold tracking-widest text-cyan-400 print:text-blue-700">
+            <div className="text-[10px] uppercase font-extrabold tracking-widest text-cyan-400 print:text-blue-700">
               AirIQ Urban CleanAir Protocol
             </div>
-            <h2 className="text-2xl font-black text-white print:text-black tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-black text-white print:text-black tracking-tight">
               Household Winter Smog Action Plan
             </h2>
             <div className="text-xs text-slate-400 print:text-gray-600 mt-1">
-              Active Location: <strong>{airQualityData.location.name}</strong> ({airQualityData.location.country}) | Current AQI: <strong>{airQualityData.aqi} ({airQualityData.category})</strong>
+              Location: <strong className="text-slate-200 print:text-black">{airQualityData.location.name}</strong> ({airQualityData.location.country}) | AQI: <strong className="text-slate-200 print:text-black">{airQualityData.aqi} ({airQualityData.category})</strong>
             </div>
           </div>
 
-          <div className="text-right text-xs text-slate-400 print:text-gray-600">
+          <div className="text-left sm:text-right text-xs text-slate-400 print:text-gray-600">
             <div>Household: {profile.adults} Adults, {profile.children} Kids, {profile.seniors} Seniors</div>
-            <div>Asthma/Respiratory: {profile.hasAsthmaOrCOPD ? '⚠️ ACTIVE' : 'None Reported'}</div>
-            <div className="font-mono text-[11px] mt-0.5">Plan Generated: {generationDate}</div>
+            <div>Asthma/Respiratory: {profile.hasAsthmaOrCOPD ? '⚠️ ACTIVE SHIELD' : 'None Reported'}</div>
+            <div className="font-mono text-[11px] mt-0.5">Generated: {generationDate}</div>
           </div>
         </div>
 
         {/* 4 Core Action Quadrants */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <PlanQuadrantCard
             icon={HeartPulse}
             title="1. Respiratory Triage & Emergency Protocol"
@@ -120,7 +120,7 @@ export const FamilyActionPlan: React.FC<FamilyActionPlanProps> = ({
         </div>
 
         {/* Readiness Checklist */}
-        <div className="p-4 rounded-xl border border-slate-800 print:border-gray-400 bg-slate-900/40 print:bg-white space-y-2">
+        <div className="p-4 rounded-xl border border-slate-800/60 print:border-gray-400 bg-slate-950/40 print:bg-white space-y-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 print:text-black">
             Household Readiness Checklist
           </h3>

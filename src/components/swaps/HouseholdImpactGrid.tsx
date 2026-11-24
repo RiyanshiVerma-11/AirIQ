@@ -7,74 +7,74 @@ interface HouseholdImpactGridProps {
 
 export const HouseholdImpactGrid: React.FC<HouseholdImpactGridProps> = ({ impact }) => {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-5 sm:p-6">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-5">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2">
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between text-xs">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
           Your Household's Potential Clean Air Impact
         </h2>
-        <span className="text-xs text-slate-400 font-mono">
+        <span className="text-[11px] text-slate-500 font-mono">
           Based on your customized lifestyle profile
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-3.5 rounded-xl border border-emerald-900/40 bg-emerald-950/20">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+        <div className="p-3.5 rounded-2xl border border-slate-800/60 bg-slate-900/40 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
             PM2.5 Averted / Mo
           </span>
           <div className="text-2xl font-black text-white">
-            {impact.monthlyPM25AvertedG} <span className="text-xs font-semibold text-slate-400">g</span>
+            {impact.monthlyPM25AvertedG} <span className="text-xs font-normal text-slate-400">g</span>
           </div>
-          <span className="text-[11px] text-slate-300 mt-1 block">
-            Direct particulate soot kept out of ambient airshed
+          <span className="text-[11px] text-slate-400 block leading-snug">
+            Particulate soot kept out of ambient air
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-blue-900/40 bg-blue-950/20">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block mb-1">
+        <div className="p-3.5 rounded-2xl border border-slate-800/60 bg-slate-900/40 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
             CO2 Averted / Mo
           </span>
           <div className="text-2xl font-black text-white">
-            {impact.monthlyCO2AvertedKg} <span className="text-xs font-semibold text-slate-400">kg</span>
+            {impact.monthlyCO2AvertedKg} <span className="text-xs font-normal text-slate-400">kg</span>
           </div>
-          <span className="text-[11px] text-slate-300 mt-1 block">
-            Greenhouse gas emissions eliminated
+          <span className="text-[11px] text-slate-400 block leading-snug">
+            Greenhouse emissions eliminated
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-indigo-900/40 bg-indigo-950/20">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-1">
+        <div className="p-3.5 rounded-2xl border border-slate-800/60 bg-slate-900/40 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block">
             Personal Exposure Drop
           </span>
           <div className="text-2xl font-black text-white">
             -{impact.personalExposureDropPercent}%
           </div>
-          <span className="text-[11px] text-slate-300 mt-1 block">
-            Reduction in daily alveolar particulate load
+          <span className="text-[11px] text-slate-400 block leading-snug">
+            Reduction in inhaled soot
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-rose-900/40 bg-rose-950/20">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 block mb-1">
+        <div className="p-3.5 rounded-2xl border border-slate-800/60 bg-slate-900/40 space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 block">
             Cigarettes Avoided / Yr
           </span>
           <div className="text-2xl font-black text-white">
             ~{impact.cigarettesAvoidedPerYear}
           </div>
-          <span className="text-[11px] text-slate-300 mt-1 block">
-            Passive cigarette equivalent lung damage spared
+          <span className="text-[11px] text-slate-400 block leading-snug">
+            Equivalent passive smoke stress
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-amber-900/40 bg-amber-950/20 col-span-2 sm:col-span-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block mb-1">
-            Annual Money Saved
+        <div className="p-3.5 rounded-2xl border border-slate-800/60 bg-slate-900/40 space-y-1 col-span-2 sm:col-span-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+            Annual Fuel Savings
           </span>
-          <div className="text-2xl font-black text-emerald-400">
+          <div className="text-2xl font-black text-emerald-300">
             ${impact.annualMoneySavedUsd}
           </div>
-          <span className="text-[11px] text-slate-300 mt-1 block">
-            Fuel, medical copays, & energy savings
+          <span className="text-[11px] text-slate-400 block leading-snug">
+            Direct transit and energy savings
           </span>
         </div>
       </div>

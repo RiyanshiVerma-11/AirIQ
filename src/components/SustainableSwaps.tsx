@@ -34,18 +34,20 @@ export const SustainableSwaps: React.FC<SustainableSwapsProps> = ({ profile }) =
   const estimatedERVisitsAvoided = Math.round(communityScale * 0.18)
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="p-5 sm:p-6 rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl space-y-2">
-        <div className="flex items-center gap-2">
-          <Flame className="w-5 h-5 text-emerald-400" />
-          <h1 className="text-xl sm:text-2xl font-extrabold text-white">
-            Sustainable Alternatives & Quantified Impact Engine
-          </h1>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Open Modern Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-800/60 pb-5">
+        <div className="space-y-1 max-w-2xl">
+          <div className="flex items-center gap-2">
+            <Flame className="w-5 h-5 text-emerald-400" />
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Sustainable Alternatives & Quantified Impact
+            </h1>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            Transform daily winter routines into clean-air choices with clear scientific explanations and quantified health & emission savings.
+          </p>
         </div>
-        <p className="text-xs sm:text-sm text-slate-300">
-          Transform daily winter routines into clean-air choices with clear scientific explanations and quantified health & emission savings.
-        </p>
       </div>
 
       {/* Personalized Household Clean-Air Dashboard */}
@@ -65,17 +67,17 @@ export const SustainableSwaps: React.FC<SustainableSwapsProps> = ({ profile }) =
       />
 
       {/* Sustainable Alternatives Catalog */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-cyan-400" />
-            Curated Sustainable Alternatives Catalog
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Curated Sustainable Alternatives Catalog</span>
           </h2>
 
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
             {[
-              { id: 'all', label: 'All Categories' },
+              { id: 'all', label: 'All' },
               { id: 'commute', label: 'Transit & Commute' },
               { id: 'cooking_heating', label: 'Heating & Cooking' },
               { id: 'waste_leaf', label: 'Anti-Leaf Burning' },
@@ -84,10 +86,10 @@ export const SustainableSwaps: React.FC<SustainableSwapsProps> = ({ profile }) =
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer text-xs ${
                   selectedCategory === cat.id
                     ? 'bg-cyan-600 text-white'
-                    : 'bg-slate-900 text-slate-400 hover:text-white'
+                    : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800/60'
                 }`}
               >
                 {cat.label}
@@ -96,7 +98,7 @@ export const SustainableSwaps: React.FC<SustainableSwapsProps> = ({ profile }) =
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {filteredAlternatives.map((alt) => (
             <AlternativeCard key={alt.id} alt={alt} />
           ))}

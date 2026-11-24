@@ -43,39 +43,39 @@ export const RoutineGenerator: React.FC<RoutineGeneratorProps> = ({
   }, [profile, airQualityData])
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner & Profile Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl">
-        <div className="space-y-1">
+    <div className="space-y-6 animate-in fade-in duration-200">
+      {/* Open Modern Header (No bounding box) */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-800/60 pb-5">
+        <div className="space-y-1 max-w-2xl">
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-cyan-400" />
-            <h1 className="text-xl sm:text-2xl font-extrabold text-white">
-              Personalized Winter Smog & Emission Routine
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Winter Smog & Emission Routine
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-slate-300">
-            Dynamically synthesized hour-by-hour schedule designed to shield your family’s lungs and eliminate discretionary winter emissions in{' '}
-            <strong className="text-white">{airQualityData.location.name}</strong> (AQI: {airQualityData.aqi}).
+          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            Hour-by-hour schedule designed to shield your family’s lungs and avoid outdoor smog peaks in{' '}
+            <strong className="text-slate-200">{airQualityData.location.name}</strong> (Current AQI: {airQualityData.aqi}).
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={handleTriggerGenAI}
             disabled={isGeneratingAI}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-cyan-600/20 disabled:opacity-50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-cyan-600/20 disabled:opacity-50 transition-all cursor-pointer"
           >
             {isGeneratingAI ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
               <Wand2 className="w-3.5 h-3.5" />
             )}
-            <span>{isGeneratingAI ? 'Synthesizing...' : 'Synthesize with GenAI'}</span>
+            <span>{isGeneratingAI ? 'Synthesizing...' : 'Synthesize with AI'}</span>
           </button>
 
           <button
             onClick={() => setShowProfileEditor(!showProfileEditor)}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/60 text-xs font-medium transition-all cursor-pointer"
           >
             <Sliders className="w-3.5 h-3.5 text-cyan-400" />
             <span>{showProfileEditor ? 'Close Profile' : 'Edit Profile'}</span>
@@ -89,22 +89,22 @@ export const RoutineGenerator: React.FC<RoutineGeneratorProps> = ({
         <ProfileCustomizer profile={profile} onUpdateProfile={onUpdateProfile} />
       )}
 
-      {/* Routine Key Metrics Summary Bar */}
+      {/* Open Metrics Strip */}
       <RoutineSummaryCards routine={routine} />
 
       {/* Hour-by-Hour Timeline Sequence */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
-            Hour-by-Hour Smog Shield Schedule
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-xs">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Hour-by-Hour Smog Shield Schedule</span>
           </h2>
-          <span className="text-xs text-slate-400">
-            Synthesized dynamically at {routine.generatedAt}
+          <span className="text-[11px] text-slate-500">
+            Updated dynamically at {routine.generatedAt}
           </span>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {routine.slots.map((slot: RoutineTimeSlot, index: number) => (
             <HourlySlotCard key={index} slot={slot} />
           ))}

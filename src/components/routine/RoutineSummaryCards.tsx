@@ -7,52 +7,52 @@ interface RoutineSummaryCardsProps {
 
 export const RoutineSummaryCards: React.FC<RoutineSummaryCardsProps> = ({ routine }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="p-4 rounded-xl border border-cyan-800/40 bg-gradient-to-br from-cyan-950/30 to-slate-900/80">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-400 block mb-1">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="p-3.5 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block">
           Exposure Reduction
         </span>
-        <div className="text-3xl font-extrabold text-white">
+        <div className="text-2xl sm:text-3xl font-black text-white">
           -{routine.overallExposureReductionPercent}%
         </div>
-        <span className="text-xs text-slate-300 mt-1 block">
-          Estimated reduction in personal inhaled PM2.5 vs unmanaged routine.
+        <span className="text-[11px] text-slate-400 leading-snug block">
+          Estimated reduction in personal inhaled PM2.5 soot.
         </span>
       </div>
 
-      <div className="p-4 rounded-xl border border-emerald-800/40 bg-gradient-to-br from-emerald-950/30 to-slate-900/80">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block mb-1">
-          Avoided Daily Particulates
+      <div className="p-3.5 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 block">
+          Avoided Soot Inhaled
         </span>
-        <div className="text-3xl font-extrabold text-white">
-          {routine.dailyAvertedEmissionsG} <span className="text-sm font-semibold text-slate-400">g PM2.5</span>
+        <div className="text-2xl sm:text-3xl font-black text-white">
+          {routine.dailyAvertedEmissionsG} <span className="text-xs font-medium text-slate-500">g PM2.5</span>
         </div>
-        <span className="text-xs text-slate-300 mt-1 block">
-          Through schedule optimization, clean transit, and sealed room filtration.
+        <span className="text-[11px] text-slate-400 leading-snug block">
+          Through diurnal timing, clean transit, and sealed room filtration.
         </span>
       </div>
 
-      <div className="p-4 rounded-xl border border-rose-800/40 bg-gradient-to-br from-rose-950/30 to-slate-900/80">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-rose-400 block mb-1">
+      <div className="p-3.5 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 block">
           Peak Inversion Trap
         </span>
-        <div className="text-lg font-bold text-rose-200 mt-1">
+        <div className="text-base sm:text-lg font-black text-rose-300">
           {routine.peakInversionWindow}
         </div>
-        <span className="text-xs text-slate-300 mt-1 block">
-          Strictly avoid outdoor jogging, bus stop exposure, and opening windows.
+        <span className="text-[11px] text-slate-400 leading-snug block">
+          Strict lockdown: no morning jogging, bus stops, or open windows.
         </span>
       </div>
 
-      <div className="p-4 rounded-xl border border-blue-800/40 bg-gradient-to-br from-blue-950/30 to-slate-900/80">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400 block mb-1">
-          The Golden Solar Window
+      <div className="p-3.5 rounded-2xl bg-slate-900/40 border border-slate-800/60 space-y-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">
+          Safe Solar Window
         </span>
-        <div className="text-lg font-bold text-emerald-300 mt-1">
+        <div className="text-base sm:text-lg font-black text-emerald-300">
           {routine.bestVentilationWindow}
         </div>
-        <span className="text-xs text-slate-300 mt-1 block">
-          Optimal timing for 15-minute flush ventilation and outdoor essential errands.
+        <span className="text-[11px] text-slate-400 leading-snug block">
+          Optimal timing for 15-minute flush ventilation and outdoor errands.
         </span>
       </div>
     </div>

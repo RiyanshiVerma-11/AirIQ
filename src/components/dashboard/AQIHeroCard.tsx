@@ -6,6 +6,7 @@ import {
   Clock,
   Info,
   ArrowRight,
+  ShieldAlert,
 } from 'lucide-react'
 import type { AirQualityData } from '../../types'
 import { getCategoryBadgeColor } from '../../services/airQualityService'
@@ -18,6 +19,7 @@ interface AQIHeroCardProps {
 
 export const AQIHeroCard: React.FC<AQIHeroCardProps> = ({ data, onNavigateTab }) => {
   const badge = getCategoryBadgeColor(data.category)
+  const whoRatio = Math.round((data.pm25 / 15) * 10) / 10
 
   // Plain English explanation of the current score
   let plainMeaning = 'Air quality is acceptable. Normal outdoor activities are fine.'
@@ -32,104 +34,118 @@ export const AQIHeroCard: React.FC<AQIHeroCardProps> = ({ data, onNavigateTab })
   }
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 p-6 sm:p-8 shadow-2xl">
+    <div className="relative pt-2 pb-4">
+      {/* Ambient Atmospheric Glow directly on canvas */}
       <div
-        className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
+        className="absolute top-1/2 left-1/3 -translate-y-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full opacity-15 blur-[100px] pointer-events-none"
         style={{ backgroundColor: badge.hex }}
       />
 
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="space-y-3 max-w-2xl">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-2xl">{data.location.flag}</span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {data.location.name}
-            </h1>
-            <span className="text-slate-400 text-sm">
-              ({data.location.region}, {data.location.country})
-            </span>
-            <CategoryBadge category={data.category} />
+      <div className="relative z-10 space-y-5">
+        {/* Top Location & Category Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="text-3xl">{data.location.flag}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                  {data.location.name}
+                </h1>
+                <CategoryBadge category={data.category} />
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {data.location.region}, {data.location.country} • Sensor live feed
+              </p>
+            </div>
           </div>
 
-          {/* Plain English Meaning */}
-          <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-1">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
-              What This Means For Your Family Right Now:
+          {/* Timestamp */}
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-slate-900/40 border border-slate-800/60 px-3 py-1.5 rounded-xl">
+            <Clock className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Updated {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        </div>
+
+        {/* Hero Splash: Direct AQI Score & Meaning without boxed walls */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          {/* Main Giant AQI Display */}
+          <div className="lg:col-span-4 flex items-baseline gap-4 sm:gap-6">
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                Current Air Quality
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="text-7xl sm:text-8xl font-black tracking-tight leading-none drop-shadow-md"
+                  style={{ color: badge.hex }}
+                >
+                  {data.aqi}
+                </span>
+                <span className="text-base font-bold text-slate-400">AQI</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 mt-2 font-medium">
+                <span>Fine Soot (PM2.5):</span>
+                <strong className="text-white">{data.pm25} µg/m³</strong>
+              </div>
             </div>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
+
+            {/* WHO Comparison Ribbon */}
+            <div className="border-l border-slate-800/80 pl-4 py-1 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-bold text-slate-400">vs WHO Standard</span>
+              <div className="text-xl sm:text-2xl font-black text-rose-400">
+                {whoRatio}x
+              </div>
+              <span className="text-[10px] text-slate-400">above safe limit</span>
+            </div>
+          </div>
+
+          {/* Plain Human Meaning Splash */}
+          <div className="lg:col-span-8 flex flex-col justify-center space-y-2 border-t lg:border-t-0 lg:border-l border-slate-800/60 pt-4 lg:pt-0 lg:pl-6">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-400">
+              <ShieldAlert className="w-4 h-4 text-cyan-400" />
+              <span>What this means for your family right now</span>
+            </div>
+            <p className="text-base sm:text-lg text-slate-100 font-medium leading-relaxed">
               {plainMeaning}
             </p>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
-            <span className="flex items-center gap-1.5">
-              <Thermometer className="w-3.5 h-3.5 text-cyan-400" />
-              {data.temperature}°C Temperature
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Droplets className="w-3.5 h-3.5 text-blue-400" />
-              {data.humidity}% Humidity
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Wind className="w-3.5 h-3.5 text-indigo-400" />
-              {data.windSpeed} km/h Wind Speed
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-emerald-400" />
-              Sensor Time: {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          </div>
-        </div>
-
-        {/* Master AQI Dial */}
-        <div className="flex items-center gap-4 bg-slate-950/70 border border-slate-800/80 rounded-3xl p-5 sm:p-6 backdrop-blur-md shrink-0">
-          <div className="text-center">
-            <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400 block mb-1">
-              Air Quality Score (0–500)
-            </span>
-            <div className="flex items-baseline justify-center gap-1">
-              <span
-                className="text-5xl sm:text-6xl font-black tracking-tight"
-                style={{ color: badge.hex }}
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-2">
+              <button
+                onClick={() => onNavigateTab('routine')}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-lg shadow-cyan-950/40 active:scale-98 transition-all cursor-pointer"
               >
-                {data.aqi}
-              </span>
-              <span className="text-sm font-bold text-slate-500">AQI</span>
-            </div>
-            <div className="mt-2 text-xs font-medium text-slate-300">
-              Fine Soot (PM2.5): <strong className="text-white">{data.pm25} µg/m³</strong>
-            </div>
-            <div className="text-[10px] text-slate-500 mt-0.5">
-              (Safe WHO Limit: 15 µg/m³)
+                <span>View Family Routine</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => onNavigateTab('iaq-lab')}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800/60 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700/60 text-xs font-medium active:scale-98 transition-all cursor-pointer"
+              >
+                <span>Indoor Air Hacks</span>
+              </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Quick Navigation Footer */}
-      <div className="mt-6 pt-5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <Info className="w-4 h-4 text-cyan-400 shrink-0" />
-          <span>
-            The air outside is currently{' '}
-            <strong className="text-rose-300 font-bold">{Math.round((data.pm25 / 15) * 10) / 10}x</strong> above the World Health Organization's safe limit.
+        {/* Ambient Environmental Ticker (Temp, Humidity, Wind) */}
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-400 pt-2 border-t border-slate-800/40">
+          <span className="flex items-center gap-1.5 font-medium text-slate-300">
+            <Thermometer className="w-3.5 h-3.5 text-cyan-400" />
+            {data.temperature}°C Temperature
           </span>
-        </div>
-
-        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2">
-          <button
-            onClick={() => onNavigateTab('routine')}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md active:scale-98 transition-all cursor-pointer"
-          >
-            <span>View Family Routine</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => onNavigateTab('iaq-lab')}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold active:scale-98 transition-all cursor-pointer"
-          >
-            <span>Indoor Air Hacks</span>
-          </button>
+          <span className="flex items-center gap-1.5 font-medium text-slate-300">
+            <Droplets className="w-3.5 h-3.5 text-blue-400" />
+            {data.humidity}% Humidity
+          </span>
+          <span className="flex items-center gap-1.5 font-medium text-slate-300">
+            <Wind className="w-3.5 h-3.5 text-indigo-400" />
+            {data.windSpeed} km/h Wind Speed
+          </span>
+          <span className="flex items-center gap-1.5 text-slate-400">
+            <Info className="w-3.5 h-3.5 text-amber-400" />
+            Safe WHO limit is 15 µg/m³
+          </span>
         </div>
       </div>
     </div>

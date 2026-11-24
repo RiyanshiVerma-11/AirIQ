@@ -9,32 +9,33 @@ interface DiurnalTimelineProps {
 
 export const DiurnalTimeline: React.FC<DiurnalTimelineProps> = ({ hourlyForecast }) => {
   return (
-    <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-3">
+      {/* Header and Legend */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Clock className="w-4 h-4 text-cyan-400" />
-            <span>When is the Air Cleanest Today? (24-Hour Schedule)</span>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-cyan-400" />
+            <span>24-Hour Clean Air Windows (Diurnal Thermal Cycles)</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Hourly smog forecast showing when to keep windows sealed vs. when to air out your home.
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            Hourly smog forecast showing when to seal windows vs when sunlight lifts the pollution lid.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-3 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded bg-emerald-500" />
-            <span className="text-slate-300 font-medium">Fresh Air Window (12:30–3:30 PM)</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-slate-300 font-medium">Safe Window (12:30–3:30 PM)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded bg-rose-600" />
-            <span className="text-slate-300 font-medium">Morning Heavy Smog</span>
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span className="text-slate-300 font-medium">Peak Morning Smog</span>
           </div>
         </div>
       </div>
 
-      {/* Hourly Timeline Grid */}
-      <div className="flex sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2 overflow-x-auto pb-2 scrollbar-thin snap-x snap-mandatory sm:snap-none sm:overflow-visible">
+      {/* Hourly Timeline Strip (Clean open scrollable layout) */}
+      <div className="flex sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2 overflow-x-auto pb-1 scrollbar-thin snap-x snap-mandatory sm:snap-none sm:overflow-visible">
         {hourlyForecast.slice(0, 12).map((hour, idx) => {
           const hBadge = getCategoryBadgeColor(
             hour.aqi <= 50
@@ -53,12 +54,12 @@ export const DiurnalTimeline: React.FC<DiurnalTimelineProps> = ({ hourlyForecast
           return (
             <div
               key={idx}
-              className={`shrink-0 w-24 sm:w-auto snap-center p-2.5 rounded-2xl border text-center transition-all ${
+              className={`shrink-0 w-24 sm:w-auto snap-center p-2.5 rounded-xl border text-center transition-all ${
                 hour.isOptimalVentilationWindow
-                  ? 'border-emerald-500/80 bg-emerald-950/40 shadow-lg shadow-emerald-950/30 ring-1 ring-emerald-500/40'
+                  ? 'border-emerald-500/70 bg-emerald-950/30 shadow-md shadow-emerald-950/20 ring-1 ring-emerald-500/30'
                   : hour.isPeakSmogDanger
-                  ? 'border-rose-900/60 bg-rose-950/20'
-                  : 'border-slate-800 bg-slate-950/60'
+                  ? 'border-rose-900/50 bg-rose-950/20'
+                  : 'border-slate-800/60 bg-slate-900/30'
               }`}
             >
               <div className="text-[11px] font-semibold text-slate-400 mb-1">{hour.time}</div>
@@ -88,11 +89,12 @@ export const DiurnalTimeline: React.FC<DiurnalTimelineProps> = ({ hourlyForecast
         })}
       </div>
 
-      <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-start gap-3 text-xs text-slate-300">
+      {/* Actionable Rule of Thumb Strip */}
+      <div className="flex items-start gap-2.5 text-xs text-slate-300 pt-1">
         <Sun className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-        <div>
-          <strong className="text-white">Everyday Rule of Thumb:</strong> Never air out your house early in the morning in winter (before 11:30 AM). Wait until the afternoon sun warms up the city. Opening windows for just 20–30 minutes around 1:30 PM flushes out stuffy indoor air while taking in the cleanest outdoor air of the day.
-        </div>
+        <p className="leading-relaxed text-slate-400">
+          <strong className="text-slate-200">Winter Ventilation Golden Rule:</strong> Never air out your house early in the morning (before 11:30 AM). Opening windows for 20–30 minutes between 1:00 PM and 3:00 PM flushes stuffy indoor air while taking in the cleanest outdoor air of the day.
+        </p>
       </div>
     </div>
   )

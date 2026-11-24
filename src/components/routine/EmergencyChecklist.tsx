@@ -13,25 +13,22 @@ export const EmergencyChecklist: React.FC<EmergencyChecklistProps> = ({ items })
   }
 
   return (
-    <div className="p-5 sm:p-6 rounded-2xl border border-rose-900/40 bg-gradient-to-br from-rose-950/20 to-slate-900/80">
-      <div className="flex items-center gap-2 mb-3">
-        <AlertOctagon className="w-5 h-5 text-rose-400" />
-        <h2 className="text-base font-bold text-white">
-          Family Smog Emergency Readiness Checklist
+    <div className="space-y-3 pt-2">
+      <div className="flex items-center gap-2">
+        <AlertOctagon className="w-4 h-4 text-rose-400" />
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          Family Smog Emergency Readiness Checklist (AQI &gt; 350)
         </h2>
       </div>
-      <p className="text-xs text-slate-300 mb-4">
-        Essential protocols to maintain during Level 4 / Hazardous smog alerts (AQI &gt; 350)
-      </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {items.map((item, idx) => (
           <label
             key={idx}
             className={`flex items-start gap-3 p-3 rounded-xl border text-xs cursor-pointer transition-all ${
               checkedItems[idx]
-                ? 'border-emerald-600/50 bg-emerald-950/20 text-slate-200'
-                : 'border-slate-800 bg-slate-950/50 text-slate-300 hover:border-slate-700'
+                ? 'border-emerald-600/40 bg-emerald-950/20 text-slate-300'
+                : 'border-slate-800/60 bg-slate-900/30 text-slate-300 hover:border-slate-700'
             }`}
           >
             <input

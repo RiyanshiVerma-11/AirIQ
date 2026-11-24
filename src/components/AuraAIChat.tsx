@@ -96,65 +96,63 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Chat Container Box */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl flex flex-col h-[calc(100dvh-11rem)] min-h-[480px] md:h-[750px] overflow-hidden">
-        {/* Chat Header Bar */}
-        <div className="p-4 border-b border-slate-800 bg-slate-950/80 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
-                <Sparkles className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm sm:text-base font-bold text-white">Aura CleanAir AI</h2>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase bg-slate-800 text-cyan-300 border border-slate-700">
-                    {hasApiKey ? 'Gemini 2.0 Live' : 'Domain Intelligence'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-400">
-                  Grounded in {airQualityData.location.name} (AQI {airQualityData.aqi}) & your household profile
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={clearMessages}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors text-xs flex items-center gap-1 cursor-pointer"
-              title="Reset conversation"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Clear</span>
-            </button>
+    <div className="space-y-4 animate-in fade-in duration-200">
+      {/* Open Modern Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-slate-800/60 pb-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-cyan-400" />
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Aura CleanAir AI Assistant
+            </h1>
           </div>
+          <p className="text-xs sm:text-sm text-slate-400">
+            Real-time atmospheric intelligence for <strong className="text-slate-200">{airQualityData.location.name}</strong> (AQI {airQualityData.aqi}) tailored to your household.
+          </p>
+        </div>
 
-          {/* Persona Selector Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
-            <span className="text-[11px] text-slate-400 font-semibold shrink-0 mr-1">Role:</span>
-            {AURA_PERSONAS.map((p) => {
-              const isSelected = activePersona === p.id
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => setActivePersona(p.id)}
-                  className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer border ${
-                    isSelected
-                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/60 shadow-sm shadow-cyan-500/20'
-                      : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
-                  }`}
-                  title={p.subtitle}
-                >
-                  <span>{p.icon}</span>
-                  <span>{p.title}</span>
-                </button>
-              )
-            })}
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] px-2.5 py-1 rounded-full font-semibold uppercase bg-slate-900/60 text-cyan-300 border border-slate-800/80">
+            {hasApiKey ? 'Gemini 2.0 Live' : 'Atmospheric Engine'}
+          </span>
+          <button
+            onClick={clearMessages}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors text-xs flex items-center gap-1 cursor-pointer"
+            title="Reset conversation"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Clear Chat</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Modern Edge-to-Edge Chat Space */}
+      <div className="rounded-2xl border border-slate-800/60 bg-slate-900/30 flex flex-col h-[calc(100dvh-13rem)] min-h-[480px] md:h-[680px] overflow-hidden">
+        {/* Persona Selector Chips */}
+        <div className="px-4 py-2.5 border-b border-slate-800/60 bg-slate-950/40 flex items-center gap-1.5 overflow-x-auto scrollbar-thin">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-1">Lens:</span>
+          {AURA_PERSONAS.map((p) => {
+            const isSelected = activePersona === p.id
+            return (
+              <button
+                key={p.id}
+                onClick={() => setActivePersona(p.id)}
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer border ${
+                  isSelected
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                    : 'bg-slate-900/40 text-slate-400 border-slate-800/60 hover:bg-slate-800 hover:text-slate-200'
+                }`}
+                title={p.subtitle}
+              >
+                <span>{p.icon}</span>
+                <span>{p.title}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* Message History Feed */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           {messages.map((msg) => (
             <ChatMessageItem key={msg.id} message={msg} />
           ))}
@@ -162,14 +160,14 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({
           {/* Typing Indicator */}
           {isLoading && (
             <div className="flex gap-3 max-w-xl mr-auto">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shrink-0 text-white">
-                <Sparkles className="w-4 h-4 animate-spin" />
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center shrink-0 text-white">
+                <Sparkles className="w-3.5 h-3.5 animate-spin" />
               </div>
-              <div className="rounded-2xl p-4 bg-slate-950 border border-slate-800 text-slate-300 text-xs flex items-center gap-2">
+              <div className="rounded-2xl p-3.5 bg-slate-950 border border-slate-800 text-slate-300 text-xs flex items-center gap-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" />
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce delay-150" />
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce delay-300" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce delay-150" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce delay-300" />
                 </div>
                 <span>Aura is calculating atmospheric & respiratory recommendations...</span>
               </div>
@@ -186,7 +184,7 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({
         />
 
         {/* Message Input Box */}
-        <div className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950">
+        <div className="p-3 sm:p-3.5 border-t border-slate-800/60 bg-slate-950/60">
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -198,13 +196,13 @@ export const AuraAIChat: React.FC<AuraAIChatProps> = ({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask Aura about severe smog protection, IAQ hacks, or sustainable routines..."
-              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+              placeholder="Ask Aura about severe smog protection, IAQ hacks, or routines..."
+              className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
             />
             <button
               type="submit"
               disabled={isLoading || !inputText.trim()}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-lg shadow-cyan-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-cyan-600/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
             >
               <span>Ask</span>
               <Send className="w-3.5 h-3.5" />

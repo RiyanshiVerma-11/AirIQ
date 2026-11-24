@@ -26,8 +26,11 @@ export const AQIDashboard: React.FC<AQIDashboardProps> = ({
   const onboarding = getOnboardingProfile()
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      {/* 1. Personalized Connected Family Profile Banner */}
+    <div className="space-y-6 sm:space-y-7 animate-in fade-in duration-200">
+      {/* 1. Master Air Quality Ambient Hero Splash */}
+      <AQIHeroCard data={data} onNavigateTab={onNavigateTab} />
+
+      {/* 2. Personalized Connected Family HUD Ribbon */}
       <PersonalizedFamilyCard
         onboarding={onboarding}
         profile={profile}
@@ -35,7 +38,7 @@ export const AQIDashboard: React.FC<AQIDashboardProps> = ({
         onEditProfile={() => onOpenSettings?.()}
       />
 
-      {/* 2. Quick Family Guidance (Can kids play? Windows? Mask? Commute?) */}
+      {/* 3. Immediate Family Action Advisory (Outdoor Play, Windows, Mask, Commute) */}
       <QuickFamilyGuidance
         data={data}
         profile={profile}
@@ -43,13 +46,10 @@ export const AQIDashboard: React.FC<AQIDashboardProps> = ({
         onNavigateTab={onNavigateTab}
       />
 
-      {/* 3. Master Air Quality Hero Card */}
-      <AQIHeroCard data={data} onNavigateTab={onNavigateTab} />
-
-      {/* 4. What Breathing Outside Feels Like (Cigarette equivalence & Lung protection) */}
+      {/* 4. Real-World Lung Impact & Atmospheric Trap (Cigarette equiv, Lung retention, Smog lid) */}
       <PhysiologicalExposureCard data={data} />
 
-      {/* 5. 24-Hour Clean Air Schedule (Diurnal Inversion Cycles in plain words) */}
+      {/* 5. 24-Hour Clean Air Schedule (Diurnal Inversion Cycles) */}
       <DiurnalTimeline hourlyForecast={data.hourlyForecast} />
 
       {/* 6. Pollutants in Plain Words */}
